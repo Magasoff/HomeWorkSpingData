@@ -17,4 +17,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     void update(Employee employee);
     void deleteById(Long id);
     List<Employee> findBySalaryGreaterThan(Integer salary);
+
+    List<Employee> findByDepartment(String department);
+
+    List<String> findDistinctDepartments();
 }
