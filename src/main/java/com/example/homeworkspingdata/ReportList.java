@@ -13,10 +13,15 @@ public class ReportList extends Report {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Report> reports;
 
+    @Column(name = "file_path")
+    private String filePath;
+
     public ReportList() {
+        super(null);
     }
 
     public ReportList(List<Report> reports) {
+        super(null);
         this.reports = reports;
     }
 
@@ -39,6 +44,5 @@ public class ReportList extends Report {
     public byte[] getFileContent() {
         return null;
     }
-
 }
 

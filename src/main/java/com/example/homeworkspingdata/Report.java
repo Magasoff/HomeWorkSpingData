@@ -11,6 +11,8 @@ public class Report {
     private double maxSalary;
     private double minSalary;
     private double avgSalary;
+    @Column(name = "file_path")
+    private String filePath;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,8 @@ public class Report {
     @Lob
     private byte[] fileContent;
 
-    public Report() {
+    public Report(String filePath) {
+        this.filePath = filePath;
         this.departmentName = departmentName;
         this.employeeCount = employeeCount;
         this.maxSalary = maxSalary;

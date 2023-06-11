@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-    @Service
+@Service
     public class ReportService {
         @Autowired
         private EmployeeRepository employeeRepository;
@@ -33,7 +32,7 @@ import java.util.Optional;
             List<Object[]> results = employeeRepository.getStatisticsByDepartment();
             List<Report> reports = new ArrayList<>();
             for (Object[] result : results) {
-                Report report = new Report();
+                Report report = new Report(filePath);
                 report.setDepartmentName((String) result[0]);
                 report.setEmployeeCount(((Number) result[1]).intValue());
                 report.setMaxSalary((Double) result[2]);
@@ -42,7 +41,7 @@ import java.util.Optional;
                 reports.add(report);
             }
             byte[] fileContent = generateReportFile(reports);
-            Report report = new Report();
+            Report report = new Report(filePath);
             report.setDepartmentName("All departments");
             report.setEmployeeCount(reports.stream().mapToInt(Report::getEmployeeCount).sum());
             report.setMaxSalary(reports.stream().mapToDouble(Report::getMaxSalary).max().orElse(0));
