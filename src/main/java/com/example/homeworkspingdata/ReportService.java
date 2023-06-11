@@ -1,44 +1,67 @@
 package com.example.homeworkspingdata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class ReportService {
+    @Service
+    public class ReportService {
+        @Autowired
+        private EmployeeRepository employeeRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+        @Autowired
+        private ReportRepository reportRepository;
 
-    @Autowired
-    private ReportRepository reportRepository;
-
-    public Long generateReport() {
-        List<Report> reports = new ArrayList<>();
-        List<String> departments = employeeRepository.findDistinctDepartments();
-        for (String department : departments) {
-            List<Employee> employees = employeeRepository.findByDepartment(department);
-            int employeeCount = employees.size();
-            double maxSalary = employees.stream().mapToDouble(Employee::getSalary).max().orElse(0);
-            double minSalary = employees.stream().mapToDouble(Employee::getSalary).min().orElse(0);
-            double avgSalary = employees.stream().mapToDouble(Employee::getSalary).average().orElse(0);
-            Report report = new Report(department, employeeCount, maxSalary, minSalary, avgSalary);
-            reports.add(report);
+        @PostMapping("/batch")
+        public ResponseEntity<Void> saveReports(@RequestBody ReportList reportList) {
+            reportRepository.save(reportList);
+            return ResponseEntity.ok().build();
         }
-        ReportList reportList = new ReportList(reports);
-        ReportList savedReportList = reportRepository.save(reportList);
-        return savedReportList.getId();
+
+        public Report generateReport() {
+            List<Object[]> results = employeeRepository.getStatisticsByDepartment();
+            List<Report> reports = new ArrayList<>();
+            for (Object[] result : results) {
+                Report report = new Report();
+                report.setDepartmentName((String) result[0]);
+                report.setEmployeeCount(((Number) result[1]).intValue());
+                report.setMaxSalary((Double) result[2]);
+                report.setMinSalary((Double) result[3]);
+                report.setAvgSalary((Double) result[4]);
+                reports.add(report);
+            }
+            byte[] fileContent = generateReportFile(reports);
+            Report report = new Report();
+            report.setDepartmentName("All departments");
+            report.setEmployeeCount(reports.stream().mapToInt(Report::getEmployeeCount).sum());
+            report.setMaxSalary(reports.stream().mapToDouble(Report::getMaxSalary).max().orElse(0));
+            report.setMinSalary(reports.stream().mapToDouble(Report::getMinSalary).min().orElse(0));
+            report.setAvgSalary(reports.stream().mapToDouble(Report::getAvgSalary).average().orElse(0));
+            report.setFileContent(fileContent);
+            return reportRepository.save(report);
+        }
+
+        private byte[] generateReportFile(List<Report> reports) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            objectMapper.registerModule(new JavaTimeModule());
+            try {
+                return objectMapper.writeValueAsBytes(reports);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error generating report file", e);
+            }
+        }
     }
 
-    public Report getReportById(Long id) {
-        Optional<ReportList> reportListOptional = reportRepository.findById(id);
-        if (reportListOptional.isPresent()) {
-            ReportList reportList = reportListOptional.get();
-            return (Report) reportList.getReports();
-        }
-        return null;
-    }
-}

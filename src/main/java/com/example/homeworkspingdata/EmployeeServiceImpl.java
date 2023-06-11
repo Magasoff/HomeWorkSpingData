@@ -55,4 +55,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .map(employee -> modelMapper.map(employee, EmployeeDto.class))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void saveAll(List<Employee> employees) {
+        employeeRepository.saveAll(employees);
+    }
 }

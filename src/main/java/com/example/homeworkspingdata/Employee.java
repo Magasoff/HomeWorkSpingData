@@ -20,10 +20,13 @@ public class Employee {
     @JoinColumn(name = "position_id")
     private Position position;
 
-    public Employee(Long id, String name, Integer salary) {
+    private String department;
+
+    public Employee(Long id, String name, Integer salary, String department) {
         this.id = id;
         this.name = name;
         this.salary = salary;
+        this.department = department;
     }
 
     public Long getId() {
@@ -47,5 +50,13 @@ public class Employee {
     }
     public void setSalary(Integer salary) {
         this.salary = salary;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

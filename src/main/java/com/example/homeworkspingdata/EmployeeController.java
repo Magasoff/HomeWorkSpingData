@@ -52,11 +52,13 @@ public class EmployeeController {
         List<EmployeeDto> employees = employeeService.getAllEmployees();
         return ResponseEntity.ok(employees);
     }
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadEmployees(@RequestBody List<Employee> employees) {
         employeeService.saveAll(employees);
         return ResponseEntity.ok("Employees uploaded successfully");
     }
+
 }
 
 

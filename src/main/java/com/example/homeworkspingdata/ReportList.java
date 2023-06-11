@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
-public class ReportList {
+public class ReportList extends Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,4 +35,10 @@ public class ReportList {
     public void setReports(List<Report> reports) {
         this.reports = reports;
     }
+
+    public byte[] getFileContent() {
+        return null;
+    }
+
 }
+

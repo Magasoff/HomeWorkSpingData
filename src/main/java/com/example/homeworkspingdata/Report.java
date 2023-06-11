@@ -1,5 +1,10 @@
 package com.example.homeworkspingdata;
 
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
 public class Report {
     private String departmentName;
     private int employeeCount;
@@ -7,12 +12,25 @@ public class Report {
     private double minSalary;
     private double avgSalary;
 
-    public Report(String departmentName, int employeeCount, double maxSalary, double minSalary, double avgSalary) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime timestamp;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DepartmentStats> departmentStats;
+
+    @Lob
+    private byte[] fileContent;
+
+    public Report() {
         this.departmentName = departmentName;
         this.employeeCount = employeeCount;
         this.maxSalary = maxSalary;
         this.minSalary = minSalary;
         this.avgSalary = avgSalary;
+        this.fileContent = fileContent;
     }
 
     public String getDepartmentName() {
@@ -53,5 +71,17 @@ public class Report {
 
     public void setAvgSalary(double avgSalary) {
         this.avgSalary = avgSalary;
+    }
+
+    public byte[] getFileContent() {
+        return fileContent;
+    }
+
+    public void setFileContent(byte[] fileContent) {
+        this.fileContent = fileContent;
+    }
+
+    public Long getId() {
+        return id;
     }
 }
