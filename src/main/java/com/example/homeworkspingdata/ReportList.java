@@ -3,7 +3,7 @@ package com.example.homeworkspingdata;
 import jakarta.persistence.*;
 
 import java.util.List;
-
+@Entity
 public class ReportList extends Report {
 
     @Id

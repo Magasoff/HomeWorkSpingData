@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+@Entity
 public class Report {
     private String departmentName;
     private int employeeCount;
