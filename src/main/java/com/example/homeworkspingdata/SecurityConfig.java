@@ -1,79 +1,85 @@
 package com.example.homeworkspingdata;
 
+import io.swagger.models.HttpMethod;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@EnableWebSecurity
 @Configuration
-public class SecurityConfig {
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Bean
-    public UserDetailsManager userDetailsManager(PasswordEncoder passwordEncoder) {
+    @Autowired
+    private UserDetailsService userDetailsService;
+    @Autowired
+    private CustomPermissionEvaluator customPermissionEvaluator;
 
-        // Создаем пользователя Ivan с ролью USER
-        UserDetails ivan = User.withUsername("Ivan")
-                .password(passwordEncoder.encode("ivan1234"))
-                .roles("USER")
-                .build();
+    @Autowired
+    @Qualifier("securityPasswordEncoder")
+    private PasswordEncoder passwordEncoder;
 
-        // Создаем пользователя Vladimir с ролью USER
-        UserDetails vladimir = User.withUsername("Vladimir")
-                .password(passwordEncoder.encode("vladimir1234"))
-                .roles("USER")
-                .build();
 
-        // Создаем пользователя admin с ролью ADMIN
-        UserDetails admin = User.withUsername("admin")
-                .password(passwordEncoder.encode("admin1234"))
-                .roles("USER", "ADMIN")
-                .build();
-
-        // Возвращаем новый сервис управления InMemoryUserDetailsManager
-        // с добавленными пользователями (Ivan, Vladimir, admin)
-        return new InMemoryUserDetailsManager(ivan, vladimir, admin);
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers("/login", "/logout").permitAll()
+                .antMatchers(HttpMethod.GET, "/employees/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/employees").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/employees/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/employees/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl("/")
+                .permitAll()
+                .and()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .permitAll();
     }
 
-    // Создаем бин кодировщика паролей (для хеширования паролей пользователей)
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    }
 
-    private void customizeRequest(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        try {
-            registry.requestMatchers(new AntPathRequestMatcher("/admin/**"))
-                    .hasAnyRole("ADMIN")
-                    // Определяем правило авторизации для запросов
-                    // к URL, которые начинаются с "/admin/",
-                    // позволяя доступ только пользователям с ролью "ADMIN".
+    @Bean("securityPasswordEncoder")
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-                    .requestMatchers(new AntPathRequestMatcher("/**"))
-                    .hasAnyRole("USER")
-                    // Определяем правило авторизации для остальных запросов,
-                    // позволяя доступ только пользователям с ролью "USER".
-
-                    .and()
-                    .formLogin().permitAll()
-                    // Позволяем всем пользователям доступ к форме входа.
-
-                    .and()
-                    .logout().logoutUrl("/logout");
-            // Настраиваем механизм выхода из системы
-            // с заданием URL "/logout".
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    protected MethodSecurityExpressionHandler createExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return expressionHandler;
     }
 }
-
