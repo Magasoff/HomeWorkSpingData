@@ -5,12 +5,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
+
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository, ModelMapper modelMapper) {
         this.employeeRepository = employeeRepository;
@@ -60,4 +67,53 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void saveAll(List<Employee> employees) {
         employeeRepository.saveAll(employees);
     }
+
+    @Override
+    public Employee createEmployee(Employee employee) {
+        logger.info("Was invoked method for create employee {}", employee);
+        Employee savedEmployee = employeeRepository.save(employee);
+        logger.debug("Employee {} was successfully saved", savedEmployee);
+        return savedEmployee;
+    }
+    @Override
+    public Employee createEmployee(Employee employee) {
+        logger.info("Was invoked method for create employee {}", employee);
+        Employee savedEmployee = employeeRepository.save(employee);
+        logger.debug("Employee {} was successfully saved", savedEmployee);
+        return savedEmployee;
+    }
+
+    @Override
+    public Employee getEmployeeById(Long id) {
+        logger.info("Was invoked method for get employee by id {}", id);
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            logger.debug("Employee {} was successfully found by id {}", employee, id);
+            return employee;
+        } else {
+            logger.error("There is no employee with id = {}", id);
+            throw new EmployeeNotFoundException("There is no employee with id = " + id);
+        }
+
+        @Override
+        public Employee getEmployeeById(Long id) {
+            logger.info("Was invoked method for get employee by id {}", id);
+            try {
+                Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+                if (optionalEmployee.isPresent()) {
+                    Employee employee = optionalEmployee.get();
+                    logger.debug("Employee {} was successfully found by id {}", employee, id);
+                    return employee;
+                } else {
+                    logger.error("There is no employee with id = {}", id);
+                    throw new EmployeeNotFoundException("There is no employee with id = " + id);
+                }
+            } catch (Exception e) {
+                logger.error("Error while getting employee by id {}", id, e);
+                throw e;
+            }
+        }
+    }
 }
+
