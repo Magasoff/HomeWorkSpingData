@@ -26,13 +26,16 @@ public class Report {
     @Lob
     private byte[] fileContent;
 
-    public Report(String filePath) {
-        this.filePath = filePath;
+    public Report(String departmentName) {
         this.departmentName = departmentName;
         this.employeeCount = employeeCount;
         this.maxSalary = maxSalary;
         this.minSalary = minSalary;
         this.avgSalary = avgSalary;
+        this.filePath = filePath;
+        this.id = id;
+        this.timestamp = timestamp;
+        this.departmentStats = departmentStats;
         this.fileContent = fileContent;
     }
 
@@ -76,15 +79,43 @@ public class Report {
         this.avgSalary = avgSalary;
     }
 
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public List<DepartmentStats> getDepartmentStats() {
+        return departmentStats;
+    }
+
+    public void setDepartmentStats(List<DepartmentStats> departmentStats) {
+        this.departmentStats = departmentStats;
+    }
+
     public byte[] getFileContent() {
         return fileContent;
     }
 
     public void setFileContent(byte[] fileContent) {
         this.fileContent = fileContent;
-    }
-
-    public Long getId() {
-        return id;
     }
 }

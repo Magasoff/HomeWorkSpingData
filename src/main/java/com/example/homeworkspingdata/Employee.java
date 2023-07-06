@@ -1,6 +1,12 @@
 package com.example.homeworkspingdata;
-
-import jakarta.persistence.*;
+import org.hibernate.annotations.Table;
+import org.springframework.data.annotation.Id;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Table(name = "employee")

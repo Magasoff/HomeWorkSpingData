@@ -45,4 +45,3 @@ public class ReportList extends Report {
         return null;
     }
 }
-
